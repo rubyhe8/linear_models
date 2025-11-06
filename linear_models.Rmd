@@ -196,6 +196,7 @@ nyc_airbnb |>
 Create a list of dataframes, and iterate ro fit the model each time. 
 
 ```{r}
+nested_lm_results = 
 nyc_airbnb |> 
   nest(data = -borough) |> 
   mutate(
@@ -206,3 +207,65 @@ nyc_airbnb |>
   unnest(results)
 ```
 
+Do some untidying. 
+
+```{r}
+nested_lm_results |> 
+  select(borough, term, estimate) |> 
+  pivot_wider(
+    names_from = term,
+    values_from = estimate
+  )
+```
+
+Use an *anonymous* function instead of `lm_airbnb`
+
+```{r}
+nested_lm_results = 
+nyc_airbnb |> 
+  nest(data = -borough) |> 
+  mutate(
+    fits = map(data, \(df) lm(price ~ stars + room_type, data = df)), 
+    results = map(fits, broom::tidy)
+  ) |> 
+  select(borough, results) |> 
+  unnest(results) |> 
+  select(borough, term, estimate) |> 
+  pivot_wider(
+    names_from = term,
+    values_from = estimate
+  ) |> 
+ knitr::kable(digits = 3)
+```
+
+lets do an even more extreme example
+
+```{r}
+manhattan_analysis = 
+  nyc_airbnb |> 
+  filter(
+    borough == "Manhattan"
+  ) |> 
+  nest(data = -neighbourhood) |> 
+  mutate(
+    fits = map(data, \(df) lm(price ~ stars + room_type, data = df)), 
+    results = map(fits, broom::tidy)
+  ) |> 
+  select(neighbourhood, results) |> 
+  unnest(results)
+```
+
+make a plot 
+
+```{r}
+manhattan_analysis |> 
+  filter(term == "stars") |> 
+  mutate(
+    neighbourhood = fct_reorder(neighbourhood, estimate)
+  ) |> 
+  ggplot(aes(x = neighbourhood, y = estimate)) +
+  geom_point() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+binary outcomes 
