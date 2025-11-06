@@ -1,0 +1,54 @@
+---
+title: "linear_models"
+author: "ruby"
+date: "2025-11-06"
+output: github_document
+---
+
+```{r message = FALSE}
+library(tidyverse)
+library(p8105.datasets)
+
+set.seed(1)
+
+```
+
+load the nyc airbnb data 
+
+```{r}
+data("nyc_airbnb")
+```
+
+look at the data/do some cleaning. 
+
+```{r}
+nyc_airbnb = 
+  nyc_airbnb |> 
+  mutate(
+    stars = review_scores_location / 2
+  ) |> 
+  rename(
+    borough = neighbourhood_group
+  ) |> 
+  filter(borough != "Staten Island") |> 
+  select(price, stars, borough, room_type, neighbourhood)
+```
+
+do regression
+
+```{r}
+fit = lm(price ~ stars + borough, data = nyc_airbnb)
+```
+
+do some additional cleaning then refit. (how does changing which borough is the reference group change the linear model)
+
+```{r}
+nyc_airbnb = 
+  nyc_airbnb |> 
+  mutate(
+    borough = fct_infreq(borough),
+    room_type = fct_infreq(room_type))
+
+fit = lm(price ~ stars + borough, data = nyc_airbnb)
+```
+
