@@ -1,0 +1,18 @@
+---
+title: "cross_validation"
+author: "ruby"
+date: "2025-11-11"
+output: html_document
+---
+
+load packages and dataset 
+
+```{r message = FALSE}
+library(tidyverse)
+library(modelr)
+library(mgcv)
+
+library(p8105.datasets)
+set.seed(1)
+```
+
